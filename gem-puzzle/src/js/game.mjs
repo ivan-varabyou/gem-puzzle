@@ -78,11 +78,9 @@ class Game {
 
   isWin() {
     this.updateRandom();
-    console.log(this.random.join(''), this.cards.join(''))
     if (this.random.join('') === this.cards.join('')) {
         this.win = 1;
-        // let score = this.moves*this.time;
-        let score = Math.random()
+        let score = this.moves/this.time;
         let minScore, topScore = [];
         this.addModal(`Hooray! You solved the puzzle in ${this.getMinut(this.time)} and ${this.moves} moves!`)
         if (localStorage.getItem('gempuzzleresult')) {
@@ -422,4 +420,3 @@ class Game {
 }
 
 const game = new Game();
-
