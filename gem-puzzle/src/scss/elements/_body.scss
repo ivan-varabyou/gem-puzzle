@@ -11,7 +11,7 @@ body {
 }
 
 .main {
-    margin-top: 40px;
+    margin-top: 15px;
 }
 
 .wrapper {
@@ -62,12 +62,11 @@ body {
         "p-5-0 p-5-1 p-5-2 p-5-3 p-5-4 p-5-5 p-5-6 p-5-7"
         "p-6-0 p-6-1 p-6-2 p-6-3 p-6-4 p-6-5 p-6-6 p-6-7"
         "p-7-0 p-7-1 p-7-2 p-7-3 p-7-4 p-7-5 p-7-6 p-7-7"
-
     ;
     display: grid;
     background: var(--bs-gray-100);
     background: linear-gradient(297deg, var(--bs-gray-100) 0%, var(--bs-gray-200) 100%);
-
+    transition: all 0.8s linear;
 
     div {
         display: grid;
@@ -81,6 +80,7 @@ body {
         font-size: 1.5rem;
         border: 1px solid var(--bs-gray-500);
         z-index: 3;
+        transition: all 0.8s linear;
     }
 
 .p-0-0 {grid-area: p-0-0}
@@ -192,4 +192,57 @@ div[data-id="0"] {
 div.modal {
     background-color: hsl(0deg 0% 53% / 50%);
     align-items: center;
+}
+
+.left {
+    animation: left 0.3s;
+}
+
+.right {
+    animation: right 0.3s;
+}
+
+.down {
+    animation: down 0.3s;
+}
+
+.up {
+    animation: up 0.3s;
+}
+
+@keyframes left {
+    from {
+        transform: translateX(0%);
+    }
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes right {
+    from {
+        transform: translateX(0%);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+
+@keyframes up {
+    from {
+        transform: translateY(0%);
+    }
+    to {
+        transform: translateY(-100%);
+    }
+}
+
+@keyframes down {
+    from {
+        transform: translateY(0%);
+    }
+    to {
+        transform: translateY(100%);
+    }
 }
