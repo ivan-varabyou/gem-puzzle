@@ -166,10 +166,6 @@ class Game {
           closeMenu();
         }
 
-        if (e.target.classList.contains("header__menu")) {
-          closeMenu();
-        }
-
         if (e.target.id === 'sound') {
           if (this.sound === 1) {
             e.target.innerText = 'Sound OFF';
@@ -209,6 +205,10 @@ class Game {
         } else {
           this.addModal('The Top 10 Results', '<p>No best results, be the first!</p>');
         }
+      }
+
+      if (e.target.classList.contains("header__menu")) {
+        closeMenu();
       }
     });
 

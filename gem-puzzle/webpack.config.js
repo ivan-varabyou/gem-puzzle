@@ -12,6 +12,9 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const environment = require('./configuration/environment');
 
+const isDev = process.env.NODE_ENV === 'development'
+
+
 const templateFiles = fs.readdirSync(environment.paths.source)
   .filter((file) => ['.html', '.ejs'].includes(path.extname(file).toLowerCase())).map((filename) => ({
     input: filename,
@@ -26,12 +29,15 @@ const htmlPluginEntries = templateFiles.map((template) => new HTMLWebpackPlugin(
   favicon: path.resolve(environment.paths.source, 'images', 'favicon.ico'),
 }));
 
+
+const filename = ext => isDev ? `[name].${ext}` : `[name].[hash].${ext}`
+
 module.exports = {
   entry: {
     app: path.resolve(environment.paths.source, 'js', 'app.js'),
   },
   output: {
-    filename: 'js/[name].js',
+    filename: filename('js'),
     path: environment.paths.output,
   },
   module: {
@@ -112,7 +118,7 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'css/[name].css',
+      filename: filename('css'),
     }),
     new CleanWebpackPlugin({
       verbose: true,
