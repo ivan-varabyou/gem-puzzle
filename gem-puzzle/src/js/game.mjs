@@ -35,7 +35,9 @@ class Game {
     this.timerStatus = 0;
     this.win = win;
     // eslint-disable-next-line no-undef
-    this.soundFx = new Audio('../sound/fx.mp3');
+    this.soundFx = new Audio('./sound/fx.wav');
+    this.soundStart = new Audio('./sound/start.wav');
+    this.soundWin = new Audio('./sound/win.wav');
     this.setCard(this.grid);
     this.random = (random) || this.getRandomCard();
     this.field = (field) || this.getField(this.random);
@@ -74,6 +76,7 @@ class Game {
       let topScore = [];
       this.addModal(`Hooray! You solved the puzzle in ${this.getTimeGame(this.time)} and ${this.moves} moves!`, 'Click button "Shuffle and start" to start a new game');
       // eslint-disable-next-line no-undef
+      this.soundWin.play();
       if (localStorage.getItem('result')) {
         topScore = this.loadStorage('result');
         if (topScore.length >= 10) {
@@ -207,7 +210,7 @@ class Game {
 
   dragCard() {
     document.onmousedown = (e) => {
-      if (e.target.dataset && e.target.dataset.id && e.target.dataset.id !== 0) {
+      if (e.target.dataset && e.target.dataset.id && e.target.dataset.id !== 0 && this.win === 0) {
         if (!this.isMove(e)) return;
         const move = this.isMove(e);
         const coord = e.target.getBoundingClientRect();
@@ -361,6 +364,13 @@ class Game {
     this.cards = []; this.setCard(this.grid);
     this.random = this.getRandomCard();
     this.field = this.getField();
+    if (this.sound === 1) {
+      setTimeout(() => {
+        this.soundStart.pause();
+        this.soundStart.currentTime = 0;
+        this.soundStart.play();
+      }, 0);
+    }
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -447,10 +457,10 @@ class Game {
       <header class=" header">
         <div class="header__button">
           <button type="button" class="btn btn-primary" name="start" id="start">Shuffle and start</button>
-          <button type="button" class="btn btn-secondary" name="stop" id="stop">Stop</button>
+          <button type="button" class="btn btn-secondary" name="stop" id="stop">Pause</button>
           <button type="button" class="btn btn-success" name="save" id="save">Save</button>
-          <button type="button" class="btn btn-info" name="result" id="result">Result</button>
-          <button type="button" class="btn btn-light" name="sound" id="sound">Sound ON</button>
+          <button type="button" class="btn btn-secondary" name="result" id="result">Top 10</button>
+          <button type="button" class="btn btn-secondary" name="sound" id="sound">Sound ON</button>
         </div>
         <div class="center header__stat">
             <div class="header__moves" id="moves">
