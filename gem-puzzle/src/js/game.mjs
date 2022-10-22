@@ -1,38 +1,26 @@
-
-
-class Card {
-  constructor(x, y, id) {
-    this.x = x;
-    this.y = y;
-    this.id = id;
-  }
-
-  set(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  position() {
-    return `${this.x}-${this.y}`;
-  }
-}
+import Card from './card.mjs';
 
 class Game {
   constructor(grid = 4, time = 0, moves = 0, random = null, field = null, win = 0) {
     this.pageGenerator();
     this.timePanel = document.getElementById('time');
     this.movesPanel = document.getElementById('moves');
-    this.frameSize = document.getElementById('framesize');
+    this.frameset = document.getElementById('frameset');
     this.modal = document.querySelector('.modal');
 
-    if (localStorage.getItem('gempuzzle')) {
-        let arg = this.loadStorage(`gempuzzle`)
-        grid = arg[0];
-        time = arg[1];
-        moves = arg[2];
-        random = arg[3];
-        this.timePanel.innerHTML = `<strong>Time:</strong> ${this.getMinut(time)}`;
-        this.movesPanel.innerHTML = `<strong>Moves:</strong> ${moves}`;
+    // eslint-disable-next-line no-undef
+    if (Array.isArray(this.loadStorage('save'))) {
+      const arg = this.loadStorage('save');
+      // eslint-disable-next-line prefer-destructuring, no-param-reassign
+      grid = arg[0];
+      // eslint-disable-next-line prefer-destructuring, no-param-reassign
+      time = arg[1];
+      // eslint-disable-next-line prefer-destructuring, no-param-reassign
+      moves = arg[2];
+      // eslint-disable-next-line prefer-destructuring, no-param-reassign
+      random = arg[3];
+      this.timePanel.innerHTML = `<strong>Time:</strong> ${this.getTimeGame(time)}`;
+      this.movesPanel.innerHTML = `<strong>Moves:</strong> ${moves}`;
     }
 
     this.grid = Number(grid);
@@ -46,20 +34,22 @@ class Game {
     this.status = 0;
     this.timerStatus = 0;
     this.win = win;
+    // eslint-disable-next-line no-undef
     this.soundFx = new Audio('../sound/fx.mp3');
     this.setCard(this.grid);
     this.random = (random) || this.getRandomCard();
     this.field = (field) || this.getField(this.random);
     this.event();
-    this.frameSize.innerHTML = `<strong>Frame size:</strong> ${grid}x${grid}`;
+    this.frameset.innerHTML = `<strong>Frame size:</strong> ${grid}x${grid}`;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   isMove(e) {
     const eX = Number(e.target.dataset.x);
     const eY = Number(e.target.dataset.y);
     const nEmpty = document.querySelector('[data-id="0"]');
-    let y = Number(nEmpty.dataset.y);
-    let x = Number(nEmpty.dataset.x);
+    const y = Number(nEmpty.dataset.y);
+    const x = Number(nEmpty.dataset.x);
     if ((eY === y && eX - 1 === x)) return 'up';
     if ((eY === y && eX + 1 === x)) return 'down';
     if ((eY - 1 === y && eX === x)) return 'left';
@@ -69,10 +59,8 @@ class Game {
 
   updateRandom() {
     const arr = [];
-    let cards = document.querySelectorAll('[data-id]')
-      .forEach((e) =>
-      arr.push([Number(e.dataset.x),Number(e.dataset.y),Number(e.dataset.id)])
-    );
+    document.querySelectorAll('[data-id]')
+      .forEach((e) => arr.push([Number(e.dataset.x), Number(e.dataset.y), Number(e.dataset.id)]));
     this.random = arr
       .sort((a, b) => a[1] - b[1])
       .sort((a, b) => a[0] - b[0])
@@ -82,34 +70,33 @@ class Game {
   isWin() {
     this.updateRandom();
     if (this.random.join('') === this.cards.join('')) {
-        this.win = 1;
-        let minScore, topScore = [];
-        this.addModal(`Hooray! You solved the puzzle in ${this.getMinut(this.time)} and ${this.moves} moves!`)
-        if (localStorage.getItem('gempuzzleresult')) {
-          topScore = this.loadStorage('gempuzzleresult');
-          if(topScore.length >= 10) {
-            topScore = sortResult(topScore)
-            if(topScore[topScore.length-1][1] > this.time) {
-              topScore.pop()
-              topScore.push([this.moves,this.time])
-            }
-            topScore = sortResult(topScore)
-          } else {
-
-            topScore.push([this.moves,this.time])
-            topScore = sortResult(topScore)
+      this.win = 1;
+      let topScore = [];
+      this.addModal(`Hooray! You solved the puzzle in ${this.getTimeGame(this.time)} and ${this.moves} moves!`, 'Click button "Shuffle and start" to start a new game');
+      // eslint-disable-next-line no-undef
+      if (localStorage.getItem('result')) {
+        topScore = this.loadStorage('result');
+        if (topScore.length >= 10) {
+          topScore = sortResult(topScore);
+          if (topScore[topScore.length - 1][1] > this.time) {
+            topScore.pop();
+            topScore.push([this.moves, this.time]);
           }
+          topScore = sortResult(topScore);
         } else {
-          topScore.push([this.moves,this.time])
+          topScore.push([this.moves, this.time]);
+          topScore = sortResult(topScore);
         }
+      } else {
+        topScore.push([this.moves, this.time]);
+      }
 
-        this.saveStorage('gempuzzleresult', topScore)
-
-        function sortResult(array){
-          array.sort((a,b) => a[0] - b[0])
-          array.sort((a,b) => a[1] - b[1])
-          return  array
-        }
+      this.saveStorage('result', topScore);
+    }
+    function sortResult(array) {
+      array.sort((a, b) => a[0] - b[0]);
+      array.sort((a, b) => a[1] - b[1]);
+      return array;
     }
   }
 
@@ -120,70 +107,63 @@ class Game {
     }
 
     if (this.pause === 0 && this.time > 0 && this.lock === 0) {
-      let x = Number(e.target.dataset.x);
-      let y = Number(e.target.dataset.y);
-      let id = Number(e.target.dataset.id);
+      const x = Number(e.target.dataset.x);
+      const y = Number(e.target.dataset.y);
       if (this.isMove(e)) {
-        let animation = this.isMove(e);
-        e.target.classList.add(animation)
+        const animation = this.isMove(e);
+        e.target.classList.add(animation);
         this.lock = 1;
-        let nEmpty = document.querySelector('[data-id="0"]');
+        const nEmpty = document.querySelector('[data-id="0"]');
         nEmpty.dataset.x = x;
         nEmpty.dataset.y = y;
         nEmpty.className = `p-${x}-${y}`;
         setTimeout(() => {
-       // if (nEmpty.className) nEmpty.className = `p-${x}-${y}`;
+          // if (nEmpty.className) nEmpty.className = `p-${x}-${y}`;
 
-        this.field[x][y].set(this.empty.x, this.empty.y);
-        e.target.className = `p-${this.empty.x}-${this.empty.y}`;
-        e.target.dataset.x = this.empty.x;
-        e.target.dataset.y = this.empty.y;
-        this.empty.set(x, y);
-        this.moves++;
-        this.movesPanel.innerHTML = `<strong>Moves:</strong> ${this.moves}`;
-        if (this.sound === 1) {
-          this.soundFx.play();
-        }
-        this.lock = 0;
-        this.isWin();
-        e.target.classList.remove(animation)
+          this.field[x][y].set(this.empty.x, this.empty.y);
+          e.target.className = `p-${this.empty.x}-${this.empty.y}`;
+          e.target.dataset.x = this.empty.x;
+          e.target.dataset.y = this.empty.y;
+          this.empty.set(x, y);
+          this.moves += 1;
+          this.movesPanel.innerHTML = `<strong>Moves:</strong> ${this.moves}`;
+          if (this.sound === 1) {
+            this.soundFx.play();
+          }
+          this.lock = 0;
+          this.isWin();
+          e.target.classList.remove(animation);
         }, 280);
-
-
       }
     }
   }
 
   event() {
     this.dragCard();
-    let x; let y; let id;
     const box = document.querySelector('.box');
     box.addEventListener('click', (e) => {
-      if(this.win === 0) {
-
-
+      if (this.win === 0) {
         if (e.target.id === 'save') {
           this.timerStatus = 1;
           this.saveStorage(
-            'gempuzzle',
+            'save',
             [
               Number(this.grid),
               Number(this.time),
               Number(this.moves),
-              this.random
-            ]
+              this.random,
+            ],
           );
           this.timerStatus = 0;
-          this.addModal('Game saved successfully','<p>Reload the page to check if the data is safe. Сlick close to continue</p>');
+          this.addModal('Game saved successfully', '<p>Reload the page to check if the data is safe. Click close to continue</p>');
         }
 
         if (e.target.id === 'stop') {
-          this.addModal('The game is paused','<p>Сlick close to continue</p>');
+          this.addModal('The game is paused', '<p>Click close to continue</p>');
         }
 
-
         if (e.target.id === 'sound') {
-          if (this.sound == 1) {
+          if (this.sound === 1) {
             e.target.innerText = 'Sound OFF';
             this.sound = 0;
           } else {
@@ -192,15 +172,13 @@ class Game {
           }
         }
 
-        if (e.target.id == 'bodyfield') {
+        if (e.target.id === 'board') {
           this.startTimer();
         }
-
-        if (e.target.dataset.game) {
-          this.startGame(e.target.dataset.game);
-          this.pause = 0;
-        }
-
+      }
+      if (e.target.dataset.game) {
+        this.startGame(e.target.dataset.game);
+        this.pause = 0;
       }
 
       if (e.target.id === 'start') {
@@ -209,114 +187,99 @@ class Game {
       }
 
       if (e.target.id === 'result') {
-        if(localStorage.getItem('gempuzzleresult')) {
-          let topScore = this.loadStorage('gempuzzleresult');
-          this.addModal('The Top 10 Results',topScore);
+        // eslint-disable-next-line no-undef
+        if (localStorage.getItem('result')) {
+          const topScore = this.loadStorage('result');
+          this.addModal('The Top 10 Results', topScore);
         } else {
-          this.addModal('The Top 10 Results','<p>No best results, be the first!</p>');
+          this.addModal('The Top 10 Results', '<p>No best results, be the first!</p>');
         }
       }
     });
 
     this.modal.addEventListener('click', (e) => {
-      if(e.target.dataset.modal === 'close') {
+      if (e.target.dataset.modal === 'close') {
         this.modal.style.display = 'none';
         this.pause = 0;
       }
-    })
-
-
+    });
   }
 
-
-
   dragCard() {
-      document.onmousedown = (e) => {
-        if(e.target.dataset && e.target.dataset.id && e.target.dataset.id !== 0) {
-        //if(isMouseWork(e) || !isMove(e)) return;
-        const coord = e.target.getBoundingClientRect()
-        const nEmpty = document.querySelector('[data-id="0"]');
-        const coordNEmpty = nEmpty.getBoundingClientRect()
+    document.onmousedown = (e) => {
+      if (e.target.dataset && e.target.dataset.id && e.target.dataset.id !== 0) {
+        if (!this.isMove(e)) return;
+        const move = this.isMove(e);
+        const coord = e.target.getBoundingClientRect();
         let mousemove = 0;
-        e.target.style.cssText =
-        ` position: absolute;
+        e.target.style.cssText = ` position: absolute;
           width: ${coord.width}px;
           height: ${coord.height}px;
           top: ${coord.top}px;
           left: ${coord.left}px;
-        `
-          let move = this.isMove(e);
-          document.onmousemove = (eM) => {
-            if(!move) return
-            mousemove = 1;
+        `;
+        document.onmousemove = (eM) => {
+          if (!move) return;
+          mousemove = 1;
 
-            if(move == 'down' && (coord.top + coord.height + e.offsetY) >= eM.clientY) {
-              if(coord.top > eM.clientY || coord.left > eM.clientX || coord.left + coord.width < eM.clientX ) {
-                resetPosition(e)
-              }
-              e.target.style.top = `${eM.clientY - e.offsetY}px`;
+          if (move === 'down' && (coord.top + coord.height + e.offsetY) >= eM.clientY) {
+            if (coord.top > eM.clientY || coord.left > eM.clientX || coord.left + coord.width < eM.clientX) {
+              resetPosition(e);
             }
-            if(move == 'up' && (coord.top - coord.height + e.offsetY) <= eM.clientY) {
-
-              if(coord.top + coord.height/1.5 < eM.clientY || coord.left > eM.clientX || coord.left + coord.width < eM.clientX ) {
-                resetPosition(e)
-              }
-              e.target.style.top = `${eM.clientY - e.offsetY}px`;
-            }
-
-
-            if(move == 'right' && (coord.left + coord.width + e.offsetX) >= eM.clientX) {
-              if(coord.left > eM.clientX || coord.top > eM.clientY || coord.top + coord.height < eM.clientY ) {
-                resetPosition(e)
-              }
-              e.target.style.left = `${eM.clientX - e.offsetX}px`;
-            }
-            if(move == 'left' && (coord.left - coord.width + e.offsetX) <= eM.clientX) {
-
-              if(coord.left + coord.width/1.5 < eM.clientX || coord.top > eM.clientY || coord.top + coord.height < eM.clientY ) {
-                resetPosition(e)
-              }
-              e.target.style.left = `${eM.clientX - e.offsetX}px`;
-            }
+            e.target.style.top = `${eM.clientY - e.offsetY}px`;
           }
-          document.onmouseup = (eU) => {
-            if(mousemove === 0) {
-              this.moveCard(e)
-            } else {
-            if((move == 'up' && coord.top > eU.clientY - coord.height/2)
-            || (move == 'down' && coord.top + coord.height/2 < eU.clientY)
-            || (move == 'left' && coord.left > eU.clientX - coord.width/2)
-            || (move == 'right' && coord.left + coord.width/2 < eU.clientX)
-            ) {
-              this.moveCard(e);
+          if (move === 'up' && (coord.top - coord.height + e.offsetY) <= eM.clientY) {
+            if (coord.top + coord.height / 1.5 < eM.clientY || coord.left > eM.clientX || coord.left + coord.width < eM.clientX) {
+              resetPosition(e);
             }
+            e.target.style.top = `${eM.clientY - e.offsetY}px`;
           }
 
-          resetPosition(e)
-          };
-          function resetPosition(e) {
-            e.target.style.cssText = '';
-            document.onmousemove = null;
-            document.onmouseup = null;
+          if (move === 'right' && (coord.left + coord.width + e.offsetX) >= eM.clientX) {
+            if (coord.left > eM.clientX || coord.top > eM.clientY || coord.top + coord.height < eM.clientY) {
+              resetPosition(e);
+            }
+            e.target.style.left = `${eM.clientX - e.offsetX}px`;
           }
-        }
+          if (move === 'left' && (coord.left - coord.width + e.offsetX) <= eM.clientX) {
+            if (coord.left + coord.width < eM.clientX || coord.top > eM.clientY || coord.top + coord.height < eM.clientY) {
+              resetPosition(e);
+            }
+            e.target.style.left = `${eM.clientX - e.offsetX}px`;
+          }
+        };
+        document.onmouseup = (eU) => {
+          if (mousemove === 0) {
+            this.moveCard(e);
+          } else if ((move === 'up' && coord.top > eU.clientY - coord.height / 2)
+            || (move === 'down' && coord.top + coord.height / 2 < eU.clientY)
+            || (move === 'left' && coord.left > eU.clientX - coord.width / 2)
+            || (move === 'right' && coord.left + coord.width / 2 < eU.clientX)
+          ) {
+            this.moveCard(e);
+          }
+
+          resetPosition(e);
+        };
       }
-
+      function resetPosition(event) {
+        // eslint-disable-next-line no-param-reassign
+        event.target.style.cssText = '';
+        document.onmousemove = null;
+        document.onmouseup = null;
+      }
+    };
   }
-
-
-
-
-
 
   setCard(grid = this.grid) {
     const max = grid * grid;
     const cards = [];
+    // eslint-disable-next-line no-plusplus
     for (let i = 1; max > i; i++) {
       cards.push(i);
     }
     cards.push(0);
-    this.cards = cards
+    this.cards = cards;
   }
 
   getRandomCard(cards = this.cards) {
@@ -324,19 +287,21 @@ class Game {
   }
 
   getField(cards = this.random) {
-    const bodyField = document.getElementById('bodyfield');
-    this.bodyField = bodyField;
-    bodyField.style.cssText = `
+    const board = document.getElementById('board');
+    this.board = board;
+    board.style.cssText = `
             grid-template-columns: repeat(${this.grid}, 1fr);
             grid-template-rows: repeat(${this.grid}, 1fr);
     `;
-    bodyField.innerHTML = '';
+    board.innerHTML = '';
     const rand = new Array(this.grid);
     let i = 0; let node; let
       id;
 
+    // eslint-disable-next-line no-plusplus
     for (let x = 0; this.grid > x; x++) {
       rand[x] = [...new Array(this.grid)];
+      // eslint-disable-next-line no-plusplus
       for (let y = 0; this.grid > y; y++) {
         id = cards[i];
         rand[x][y] = new Card(x, y, id);
@@ -349,7 +314,8 @@ class Game {
         node.dataset.y = `${rand[x][y].y}`;
         node.dataset.id = `${rand[x][y].id}`;
         node.innerText = `${rand[x][y].id}`;
-        bodyField.append(node);
+        board.append(node);
+        // eslint-disable-next-line no-plusplus
         i++;
       }
     }
@@ -357,7 +323,8 @@ class Game {
     return rand;
   }
 
-  getMinut(time) {
+  // eslint-disable-next-line class-methods-use-this
+  getTimeGame(time) {
     const m = (Math.trunc(time / 60) < 10) ? `0${Math.trunc(time / 60)}` : `${Math.trunc(time / 60)}`;
     const s = (time % 60 < 10) ? `0${time % 60}` : `${time % 60}`;
     return `${m}:${s}`;
@@ -366,15 +333,16 @@ class Game {
   setTimer(time = this.time) {
     if (this.timerStatus === 0) {
       this.timerStatus = 1;
-      if(this.time === 0) {
-        this.time= 1
+      if (this.time === 0) {
+        this.time = 1;
       }
       clearInterval(this.timeId);
       this.timeId = setInterval(() => {
         if (this.pause === 0 && this.win === 0) {
-          ++time;
+          // eslint-disable-next-line no-param-reassign
+          time += 1;
           this.time = time;
-          this.timePanel.innerHTML = `<strong>Time:</strong> ${this.getMinut(time)}`;
+          this.timePanel.innerHTML = `<strong>Time:</strong> ${this.getTimeGame(time)}`;
         }
       }, 1000);
       this.timerStatus = 0;
@@ -389,17 +357,21 @@ class Game {
     this.grid = grid;
     this.timePanel.innerHTML = '<strong>Time:</strong> 00:00';
     this.movesPanel.innerHTML = '<strong>Moves:</strong> 0';
-    this.frameSize.innerHTML = `<strong>Frame size:</strong> ${grid}x${grid}`;
+    this.frameset.innerHTML = `<strong>Frame size:</strong> ${grid}x${grid}`;
     this.cards = []; this.setCard(this.grid);
     this.random = this.getRandomCard();
     this.field = this.getField();
   }
 
+  // eslint-disable-next-line class-methods-use-this
   saveStorage(name, data) {
+    // eslint-disable-next-line no-undef
     localStorage.setItem(name, JSON.stringify(data));
   }
 
-  loadStorage(name, data) {
+  // eslint-disable-next-line class-methods-use-this
+  loadStorage(name) {
+    // eslint-disable-next-line no-undef
     return JSON.parse(localStorage.getItem(name));
   }
 
@@ -407,65 +379,66 @@ class Game {
     if (this.time === 0 || this.status === 0) this.setTimer();
   }
 
-  addModal(massage, body=null) {
+  addModal(massage, body = null) {
     this.pause = 1;
     this.modal.innerHTML = '';
     let bodyHtml;
 
-    if(body == null) {
-      body = ''
+    if (body == null) {
+      // eslint-disable-next-line no-param-reassign
+      body = '';
     }
-    //Hooray! You solved the puzzle in ##:## and N moves!
-    let modalDialog = document.createElement('div')
+    // Hooray! You solved the puzzle in ##:## and N moves!
+    const modalDialog = document.createElement('div');
     modalDialog.className = 'modal-dialog';
-    let modalContent = document.createElement('div')
+    const modalContent = document.createElement('div');
     modalContent.className = 'modal-content';
 
-    let modalHeader = document.createElement('div')
+    const modalHeader = document.createElement('div');
     modalHeader.className = 'modal-header';
 
-    let modalTitle = document.createElement('h5')
+    const modalTitle = document.createElement('h5');
     modalTitle.className = 'modal-title';
-    modalTitle.append(massage)
+    modalTitle.append(massage);
 
-    let modalBody = document.createElement('div')
+    const modalBody = document.createElement('div');
     modalBody.className = 'modal-body';
-    if(Array.isArray(body)) {
+    if (Array.isArray(body)) {
       bodyHtml = document.createElement('table');
       bodyHtml.className = 'table';
       let bodyHtmlTr;
-      bodyHtml.insertAdjacentHTML('beforeend',`<tr><td>Top</td><td>Mover</td><td>Time</td></tr>`)
-      body.forEach((v,i) => {
+      bodyHtml.insertAdjacentHTML('beforeend', '<tr><td>Top</td><td>Mover</td><td>Time</td></tr>');
+      body.forEach((v, i) => {
         bodyHtmlTr = `
-          <tr><td>${i+1}</td><td>${v[0]}</td><td>${this.getMinut(v[1])}</td></tr>
-        `
-        bodyHtml.insertAdjacentHTML('beforeend',bodyHtmlTr)
-      })
+          <tr><td>${i + 1}</td><td>${v[0]}</td><td>${this.getTimeGame(v[1])}</td></tr>
+        `;
+        bodyHtml.insertAdjacentHTML('beforeend', bodyHtmlTr);
+      });
     } else {
       bodyHtml = document.createElement('div');
-      bodyHtml.insertAdjacentHTML('beforeend',body)
+      bodyHtml.insertAdjacentHTML('beforeend', body);
     }
 
-    modalBody.append(bodyHtml)
+    modalBody.append(bodyHtml);
 
-    let modalFooter= document.createElement('div')
+    const modalFooter = document.createElement('div');
     modalFooter.className = 'modal-footer';
-    modalFooter.insertAdjacentHTML('beforeend','<button type="button" class="btn btn-secondary" data-modal="close">Close</button>')
+    modalFooter.insertAdjacentHTML('beforeend', '<button type="button" class="btn btn-secondary" data-modal="close">Close</button>');
 
-    modalHeader.append(modalTitle)
-    modalContent.append(modalHeader)
-    modalContent.append(modalBody)
-    modalContent.append(modalFooter)
-    modalDialog.append(modalContent)
+    modalHeader.append(modalTitle);
+    modalContent.append(modalHeader);
+    modalContent.append(modalBody);
+    modalContent.append(modalFooter);
+    modalDialog.append(modalContent);
 
-
-    this.modal.append(modalDialog)
+    this.modal.append(modalDialog);
     this.modal.style.display = 'grid';
   }
 
+  // eslint-disable-next-line class-methods-use-this
   pageGenerator() {
-    //Hooray! You solved the puzzle in ##:## and N moves!
-    let html = document.createElement("main")
+    // Hooray! You solved the puzzle in ##:## and N moves!
+    const html = document.createElement('main');
     html.className = 'main';
     html.innerHTML = `
     <div class="container">
@@ -491,15 +464,15 @@ class Game {
         </div>
       </header>
       <div class="wrapper-body">
-      <div class="body" id="bodyfield">
+      <div class="body" id="board">
       </div>
     </div>
       <div class="footer">
-        <div class="footer__text" id="framesize">
+        <div class="footer__text" id="frameset">
           <strong>Frame size:</strong>
           <span>4x4</span>
         </div>
-        <div class="footer__text d-inline-grid" id="gamegrid" >
+        <div class="footer__text d-inline-grid" >
           <strong>Other size:</strong>
           <span class="footer__link" data-game="3">3x3</span>
           <span class="footer__link" data-game="4">4x4</span>
@@ -516,9 +489,10 @@ class Game {
     <div class="modal" style="display:none;">
 
     </div>
-    `
-    document.body.append(html)
+    `;
+    document.body.append(html);
   }
 }
 
-const game = new Game();
+// eslint-disable-next-line no-unused-vars
+const puzzle = new Game();
