@@ -7,7 +7,6 @@ class Game {
     this.movesPanel = document.getElementById('moves');
     this.frameset = document.getElementById('frameset');
     this.modal = document.querySelector('.modal');
-
     // eslint-disable-next-line no-undef
     if (Array.isArray(this.loadStorage('save'))) {
       const arg = this.loadStorage('save');
@@ -159,10 +158,16 @@ class Game {
           );
           this.timerStatus = 0;
           this.addModal('Game saved successfully', '<p>Reload the page to check if the data is safe. Click close to continue</p>');
+          closeMenu();
         }
 
         if (e.target.id === 'stop') {
           this.addModal('The game is paused', '<p>Click close to continue</p>');
+          closeMenu();
+        }
+
+        if (e.target.classList.contains("header__menu")) {
+          closeMenu();
         }
 
         if (e.target.id === 'sound') {
@@ -173,20 +178,27 @@ class Game {
             e.target.innerText = 'Sound On';
             this.sound = 1;
           }
+          closeMenu();
         }
 
         if (e.target.id === 'board') {
           this.startTimer();
         }
       }
+
+      if (e.target.id === 'menu') {
+        toggleMenu();
+      }
       if (e.target.dataset.game) {
         this.startGame(e.target.dataset.game);
         this.pause = 0;
+        closeMenu();
       }
 
       if (e.target.id === 'start') {
         this.startGame();
         this.startTimer();
+        closeMenu();
       }
 
       if (e.target.id === 'result') {
@@ -199,6 +211,14 @@ class Game {
         }
       }
     });
+
+    function closeMenu() {
+      document.querySelector('.header__menu').classList.remove('menu-active');
+    }
+
+    function toggleMenu() {
+      document.querySelector('.header__menu').classList.toggle('menu-active');
+    }
 
     this.modal.addEventListener('click', (e) => {
       if (e.target.dataset.modal === 'close') {
@@ -454,7 +474,9 @@ class Game {
     <div class="container">
       <div class="wrapper">
       <div class="box">
-      <header class=" header">
+      <header class="header">
+      <button type="button" class="btn btn-primary btn-menu" name="menu" id="menu">Menu</button>
+      <div class="header__menu">
         <div class="header__button">
           <button type="button" class="btn btn-primary" name="start" id="start">Shuffle and start</button>
           <button type="button" class="btn btn-secondary" name="stop" id="stop">Pause</button>
@@ -462,6 +484,7 @@ class Game {
           <button type="button" class="btn btn-secondary" name="result" id="result">Top 10</button>
           <button type="button" class="btn btn-secondary" name="sound" id="sound">Sound ON</button>
         </div>
+       </div>
         <div class="center header__stat">
             <div class="header__moves" id="moves">
               <strong>Moves:</strong>
@@ -472,7 +495,7 @@ class Game {
               <span>00:00</span>
             </div>
         </div>
-      </header>
+
       <div class="wrapper-body">
       <div class="body" id="board">
       </div>
@@ -496,9 +519,7 @@ class Game {
       </div>
     </div>
   </main>
-    <div class="modal" style="display:none;">
-
-    </div>
+    <div class="modal" style="display:none;"></div>
     `;
     document.body.append(html);
   }
